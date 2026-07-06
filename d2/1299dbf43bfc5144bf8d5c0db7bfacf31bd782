@@ -1,0 +1,41 @@
+.github/workflows/ci.yml
+  s_211d9161cbdd5a::t_8652632bf2283c 1-23
+.gitignore
+  s_211d9161cbdd5a::t_fc025b759f6b1f 1
+Dockerfile
+  s_211d9161cbdd5a::t_2bc84d72c6592a 1-9
+LICENSE
+  s_211d9161cbdd5a::t_b2ee3a47ad5107 1-21
+README.md
+  s_211d9161cbdd5a::t_f3d4fa406ddebd 1-92
+addon.js
+  s_211d9161cbdd5a::t_980f0b959f64c3 1-159
+package-lock.json
+  s_211d9161cbdd5a::t_bb046dcf792ad3 1-1334
+package.json
+  s_211d9161cbdd5a::t_1b2544a8fb05dc 1-34
+publish.js
+  s_211d9161cbdd5a::t_e657eedaa4487b 1-13
+server.js
+  s_211d9161cbdd5a::t_631ab6c57e5911 1-11
+shuffle.js
+  s_211d9161cbdd5a::t_e18999fa7286cb 1-63
+test/shuffle.test.js
+  s_211d9161cbdd5a::t_e5c756d823fa8c 1-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d21299dbf43bfc5144bf8d5c0db7bfacf31bd782",
+  "prompts": {},
+  "sessions": {
+    "s_211d9161cbdd5a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "38e015a1-f77a-421a-a92d-816706940d89",
+        "model": "unknown"
+      },
+      "human_author": "Shauli Arazi <shauli@atom.ai>"
+    }
+  }
+}
