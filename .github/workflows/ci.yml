@@ -20,4 +20,4 @@ jobs:
         run: |
           node server.js &
           sleep 2
-          curl -sf http://127.0.0.1:7005/manifest.json | grep -q '"id"'
+          curl -sf http://127.0.0.1:7005/addon/abcdefghijklmnop/manifest.json | grep -q '"id"'

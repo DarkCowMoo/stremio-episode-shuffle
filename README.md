@@ -9,14 +9,7 @@ Stremio addons can't reorder another addon's episode list, so this addon uses a 
 1. **Catalog** — the addon exposes a searchable `series` catalog backed by [Cinemeta](https://v3-cinemeta.strem.io) (Stremio's official metadata addon). Each result is re-badged with a `shuffle:` id prefix (e.g. `shuffle:tt0903747`), which routes meta requests for those items to this addon.
 2. **Meta** — when you open a shuffled series, the addon fetches the real episode list from Cinemeta, filters out specials (season 0) and unaired episodes, shuffles the rest with a seeded Fisher–Yates shuffle, and **renumbers them as Season 1, episodes 1..N** in shuffled order.
 3. **Streams** — each shuffled entry keeps its *original* video id (`tt0903747:3:7`), so all your installed stream addons (Torrentio, debrid addons, etc.) resolve streams exactly as they would for the normal series. This addon never touches streams itself.
-4. **"Shuffle this series" link** — for *normal* (non-shuffled) episodes, the addon also answers stream requests with fake stream entries that are deep links to the shuffled page. Open any episode of any series and you'll see **🔀 Shuffle this series** in the streams list. This is the closest the addon protocol allows to a button on the regular series page, since addons cannot inject UI into pages they don't own.
-
-   Link format differs per client, controlled by the `LINK_TARGET` env var:
-   - `app` — `stremio:///detail/...` meta link; opened in-app by desktop / Android / Android TV clients
-   - `web` — `https://web.strem.io/#/detail/...` link for Stremio Web
-   - `both` (default) — serves both entries, so one addon deployment works everywhere
-
-The shuffle order is seeded per-series and cached in memory for **12 hours**, so "next episode" stays consistent mid-binge but you get a fresh order later. Restarting the server also re-rolls all orders. Tune `SHUFFLE_TTL_MS` in `addon.js` to taste.
+Each installation receives a private random installation id. The order is deterministically derived from that id and the series ID, so it is personal, stable across deploys, and consistent across multiple server instances.
 
 ## Run locally
 
@@ -27,13 +20,13 @@ npm install
 npm start
 ```
 
-Then in Stremio: **Addons → paste addon URL** (or open in a browser):
+Then open this page in a browser and use its install button:
 
 ```
-http://127.0.0.1:7005/manifest.json
+http://127.0.0.1:7005/configure
 ```
 
-`serveHTTP` also serves a small landing page at `http://127.0.0.1:7005/` with an install button.
+The install button creates a unique URL of the form `/addon/<installation-id>/manifest.json`. Keep that URL private; it identifies your shuffle configuration.
 
 ## Usage
 
@@ -45,13 +38,11 @@ Marking-as-watched applies to the underlying episode ids, so watched state carri
 
 ## Testing on Stremio Web
 
-The fastest dev loop: run `npm start` locally, open https://web.strem.io in Chrome, and install `http://127.0.0.1:7005/manifest.json` from the Addons page. Chrome treats `127.0.0.1` as a secure origin, so the HTTPS page is allowed to talk to your local HTTP addon (this may not work in all browsers — use Chrome/Edge if the install silently fails). After code changes, restart the server and refresh the page; if a catalog or meta looks stale, bump `version` in the manifest or reinstall the addon to bust client caches.
-
-Note the shuffled meta page and catalog behave identically on web and Android TV — only the deep-link entry differs (see `LINK_TARGET` above), so web is a faithful test environment for everything else.
+The fastest dev loop: run `npm start`, open `http://127.0.0.1:7005/configure`, and install from there. Then use Stremio Web in Chrome or Edge. After code changes, reinstall to refresh the manifest.
 
 ## Deploy
 
-Any Node host works (Render, Railway, Fly.io, a VPS...). The server binds to `process.env.PORT`. For serverless platforms, swap `serveHTTP` for the SDK's `getRouter` and mount it in an Express app.
+Any Node host works (Render, Railway, Fly.io, a VPS...). The server binds to `process.env.PORT` and exposes `/health` for deployment health checks.
 
 Note: Stremio requires public addons to be served over **HTTPS** (localhost is exempt).
 
@@ -61,21 +52,21 @@ Note: Stremio requires public addons to be served over **HTTPS** (localhost is e
 npm test
 ```
 
-Covers shuffle determinism, permutation correctness, non-mutation, and seed-cache TTL behavior.
+Covers shuffle determinism, per-install seeds, catalog ID filtering, episode filtering, and preservation of stream-compatible episode IDs.
 
 ## Project layout
 
 ```
 addon.js     manifest + catalog/meta handlers
-shuffle.js   seeded RNG, Fisher–Yates, seed cache (unit-tested)
-server.js    entrypoint
+shuffle.js   seeded RNG and Fisher–Yates
+server.js    configurable-install entrypoint
 test/        unit tests
 ```
 
 ## Ideas / contributions welcome
 
 - Config page to choose shuffle scope (whole series vs. a specific season)
-- "Reshuffle now" action (e.g. via a manifest `config` + user-supplied seed)
+- "Reshuffle now" action (creates a new installation id)
 - Exclude already-watched episodes (would need Stremio library integration)
 
 ## Open-sourcing / publishing checklist
@@ -86,6 +77,8 @@ test/        unit tests
 4. Bump the manifest `version` on every deploy — clients cache manifests aggressively.
 5. Publish to the in-app community catalog: `npm run publish-addon -- https://your-host/manifest.json`
 6. Announce on r/StremioAddons and the community addon lists.
+
+Use the public root manifest only for the catalog URL. Users should install through `https://your-host/configure`, which creates their personal addon URL.
 
 ## License
 
