@@ -1,6 +1,6 @@
 {
   "name": "stremio-episode-shuffle",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "Stremio addon: pick a series and watch its episodes in shuffled order",
   "main": "server.js",
   "scripts": {

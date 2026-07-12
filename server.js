@@ -1,12 +1,53 @@
 "use strict";
 
 const express = require("express");
-const { getRouter } = require("stremio-addon-sdk");
+const querystring = require("node:querystring");
 const { createAddonInterface } = require("./addon");
 
 const PORT = Number(process.env.PORT) || 7005;
 const installationIdPattern = /^[A-Za-z0-9_-]{16,128}$/;
 const MAX_CACHED_ROUTERS = 500;
+
+function setCorsHeaders(res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+}
+
+function setCacheHeaders(res, response) {
+    const directives = [
+        ["cacheMaxAge", "max-age"],
+        ["staleRevalidate", "stale-while-revalidate"],
+        ["staleError", "stale-if-error"]
+    ].filter(([property]) => Number.isInteger(response[property]))
+        .map(([property, header]) => `${header}=${response[property]}`);
+    if (directives.length) res.setHeader("Cache-Control", `${directives.join(", ")}, public`);
+}
+
+function createProtocolRouter(addon) {
+    const router = express.Router();
+    const manifest = JSON.stringify(addon.manifest);
+
+    router.use((_req, res, next) => { setCorsHeaders(res); next(); });
+    router.options("*", (_req, res) => res.sendStatus(204));
+    router.get("/manifest.json", (_req, res) => res.type("json").send(manifest));
+
+    async function handleResource(req, res) {
+        const { resource, type, id, extra } = req.params;
+        if (resource !== "catalog" && resource !== "meta") return res.status(404).json({ err: "not found" });
+        try {
+            const response = await addon.get(resource, type, id, extra ? querystring.parse(extra) : {});
+            setCacheHeaders(res, response);
+            return res.json(response);
+        } catch (error) {
+            console.error("protocol error:", error);
+            return res.status(500).json({ err: "handler error" });
+        }
+    }
+
+    router.get("/:resource/:type/:id/:extra.json", handleResource);
+    router.get("/:resource/:type/:id.json", handleResource);
+    return router;
+}
 
 function createApp({ maxCachedRouters = MAX_CACHED_ROUTERS } = {}) {
     const routers = new Map();
@@ -16,7 +57,7 @@ function createApp({ maxCachedRouters = MAX_CACHED_ROUTERS } = {}) {
         const key = `${installationId}:${configurationRequired}`;
         if (!routers.has(key)) {
             if (routers.size >= maxCachedRouters) routers.delete(routers.keys().next().value);
-            routers.set(key, getRouter(createAddonInterface(installationId, { configurationRequired })));
+            routers.set(key, createProtocolRouter(createAddonInterface(installationId, { configurationRequired })));
         }
         return routers.get(key);
     }

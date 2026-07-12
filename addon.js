@@ -12,7 +12,7 @@ const upstreamCache = new Map();
 function manifestFor(configurationRequired) {
     return {
         id: "com.github.DarkCowMoo.episode-shuffle",
-        version: "1.1.0",
+        version: "1.1.1",
         name: "Episode Shuffle",
         description: "Create a personal, stable shuffled playlist for any series. Streams still come from your regular stream addons.",
         logo: "https://raw.githubusercontent.com/Stremio/stremio-art/main/originals/deer-4.png",
