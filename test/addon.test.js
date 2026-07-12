@@ -17,7 +17,9 @@ global.fetch = async (url) => ({
 
 (async () => {
     const addon = createAddonInterface("abcdefghijklmnop");
-    assert.equal(addon.manifest.behaviorHints.configurationRequired, true);
+    assert.equal(addon.manifest.behaviorHints.configurationRequired, false);
+    const publicAddon = createAddonInterface("public-installation", { configurationRequired: true });
+    assert.equal(publicAddon.manifest.behaviorHints.configurationRequired, true);
     const catalog = await addon.get("catalog", "series", "shuffle-series", {});
     assert.deepStrictEqual(catalog.metas.map((meta) => meta.id), ["shuffle:tt123"]);
     const response = await addon.get("meta", "series", "shuffle:tt123", {});

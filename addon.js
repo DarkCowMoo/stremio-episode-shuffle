@@ -9,7 +9,7 @@ const UPSTREAM_CACHE_MS = 5 * 60 * 1000;
 const installationIdPattern = /^[A-Za-z0-9_-]{16,128}$/;
 const upstreamCache = new Map();
 
-function manifestFor() {
+function manifestFor(configurationRequired) {
     return {
         id: "com.github.DarkCowMoo.episode-shuffle",
         version: "1.1.0",
@@ -25,7 +25,7 @@ function manifestFor() {
             extra: [{ name: "search", isRequired: false }, { name: "skip" }]
         }],
         contactEmail: "shauli.arazi@gmail.com",
-        behaviorHints: { configurable: true, configurationRequired: true }
+        behaviorHints: { configurable: true, configurationRequired }
     };
 }
 
@@ -57,9 +57,9 @@ function toShufflePreview(meta) {
     };
 }
 
-function createAddonInterface(installationId) {
+function createAddonInterface(installationId, { configurationRequired = false } = {}) {
     if (!installationIdPattern.test(installationId)) throw new Error("Invalid installation id");
-    const builder = new addonBuilder(manifestFor());
+    const builder = new addonBuilder(manifestFor(configurationRequired));
 
     builder.defineCatalogHandler(async ({ type, id, extra }) => {
         if (type !== "series" || id !== "shuffle-series") return { metas: [] };
