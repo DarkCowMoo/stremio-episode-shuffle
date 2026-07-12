@@ -73,7 +73,7 @@ test/        unit tests
 
 1. Manifest `id` and `contactEmail` in `addon.js`, and the repo URLs in `package.json`, are already set for this deployment.
 2. Push to GitHub — CI (`.github/workflows/ci.yml`) runs tests and a manifest smoke test on Node 18/20/22.
-3. Host it over HTTPS: [Beamup](https://github.com/Stremio/stremio-beamup) (Stremio's free community hosting, git-push deploys), or any Node host / the included `Dockerfile`.
+3. Host it over HTTPS: [Beamup](https://github.com/Stremio/stremio-beamup) (Stremio's free community hosting, git-push deploys), or any Node host.
 4. Bump the manifest `version` on every deploy — clients cache manifests aggressively.
 5. Publish to the in-app community catalog: `npm run publish-addon -- https://your-host/manifest.json`
 6. Announce on r/StremioAddons and the community addon lists.
