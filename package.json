@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/shuffle.test.js && node test/addon.test.js",
+    "test": "node test/shuffle.test.js && node test/addon.test.js && node test/server.test.js && node test/deployment.test.js",
     "publish-addon": "node publish.js"
   },
   "license": "MIT",
